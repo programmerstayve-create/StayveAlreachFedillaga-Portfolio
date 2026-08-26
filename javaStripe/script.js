@@ -313,8 +313,6 @@ modalSubmit.addEventListener('click', () => {
         return;
     }
 
-    // Close modal and open admin panel with the password
-    // The Worker will validate it
     closeModal();
     openAdminPanel(password);
 });
@@ -397,6 +395,61 @@ adminForm.addEventListener('submit', async function(e) {
         }
     }
 });
+
+// ============================================================
+// CONTACT FORM HANDLER
+// ============================================================
+const contactForm = document.querySelector('.contact-form');
+
+if (contactForm) {
+    contactForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const name = this.querySelector('input[name="name"]').value.trim();
+        const email = this.querySelector('input[name="email"]').value.trim();
+        const message = this.querySelector('textarea[name="message"]').value.trim();
+
+        if (!name || !email || !message) {
+            alert('⚠️ Please fill in all fields.');
+            return;
+        }
+
+        if (!email.includes('@') || !email.includes('.')) {
+            alert('⚠️ Please enter a valid email address.');
+            return;
+        }
+
+        const submitBtn = this.querySelector('.btn-primary');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = '⏳ Sending...';
+        submitBtn.disabled = true;
+
+        try {
+            const response = await fetch(`${API_URL.replace('/projects', '')}/contact`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, email, message }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('✅ ' + result.message);
+                this.reset();
+            } else {
+                alert('❌ ' + (result.error || 'Failed to send message.'));
+            }
+        } catch (error) {
+            alert('❌ Network error. Please try again later.');
+            console.error('Contact form error:', error);
+        } finally {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+}
 
 // ============================================================
 // LOAD PROJECTS ON PAGE LOAD
