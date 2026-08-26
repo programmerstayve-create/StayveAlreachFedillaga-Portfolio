@@ -1567,3 +1567,118 @@ body.light-mode .notification-text {
         font-size: 1rem;
     }
 }
+
+/* ============================================================
+   VIEW SCREENSHOTS BUTTON – COMET GLOW EFFECT
+   ============================================================ */
+.view-images-btn {
+    position: relative;
+    background: var(--card-bg);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    font-size: 0.85rem;
+    overflow: hidden;
+    z-index: 1;
+}
+
+/* Glowing border pseudo-element */
+.view-images-btn::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 10px;
+    padding: 2px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        #f59e0b 20%, 
+        #fbbf24 40%, 
+        #06b6d4 60%, 
+        #3b82f6 80%, 
+        transparent 100%
+    );
+    background-size: 300% 100%;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: cometMove 4s linear infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Glowing shadow behind the button */
+.view-images-btn::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 12px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(251, 191, 36, 0.3) 30%, 
+        rgba(6, 182, 212, 0.3) 60%, 
+        transparent 100%
+    );
+    background-size: 300% 100%;
+    animation: cometMove 4s linear infinite;
+    filter: blur(8px);
+    z-index: -2;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+@keyframes cometMove {
+    0% { background-position: 300% 0; }
+    100% { background-position: -300% 0; }
+}
+
+/* Hover effect */
+.view-images-btn:hover {
+    transform: scale(1.05);
+    color: var(--text-primary);
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+}
+
+.view-images-btn:hover::before {
+    animation-duration: 1.5s; /* Speeds up on hover */
+}
+
+.view-images-btn:active {
+    transform: scale(0.95);
+}
+
+/* Light mode adjustments */
+body.light-mode .view-images-btn::before {
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        #f59e0b 20%, 
+        #fbbf24 40%, 
+        #06b6d4 60%, 
+        #3b82f6 80%, 
+        transparent 100%
+    );
+}
+
+body.light-mode .view-images-btn::after {
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(251, 191, 36, 0.2) 30%, 
+        rgba(6, 182, 212, 0.2) 60%, 
+        transparent 100%
+    );
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .view-images-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.75rem;
+    }
+}

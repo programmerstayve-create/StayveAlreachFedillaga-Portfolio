@@ -387,7 +387,17 @@ async function handleDeleteProject(id) {
 // ============================================================
 // HANDLE EDIT PROJECT
 // ============================================================
+// ============================================================
+// HANDLE EDIT PROJECT (with password prompt if needed)
+// ============================================================
 async function handleEditProject(id) {
+    // If no password stored, prompt for it
+    if (!currentPassword) {
+        const pwd = prompt('Enter admin password to edit this project:');
+        if (!pwd) return;
+        currentPassword = pwd;
+    }
+
     // Fetch the project details
     const projects = await fetchProjects();
     const project = projects.find(p => p.id == id);
@@ -406,10 +416,9 @@ async function handleEditProject(id) {
     projectImages.value = project.images || '';
 
     adminSubmitBtn.textContent = '✏️ Update Project';
-    adminForm.querySelector('h3')?.remove();
     document.querySelector('.admin-box h3').textContent = '✏️ Edit Project';
 
-    // Open the admin panel
+    // Open the admin panel (password is already set)
     adminModal.classList.add('active');
     hideAdminMessage();
     document.body.classList.add('admin-mode');
@@ -498,10 +507,10 @@ function openAdminPanel(password) {
 function closeAdminPanel() {
     adminModal.classList.remove('active');
     hideAdminMessage();
-    currentPassword = '';
-    editingProjectId = null;
-    adminSubmitBtn.textContent = '➕ Add Project';
-    document.querySelector('.admin-box h3').textContent = '📂 Add New Project';
+    // currentPassword = '';
+    // editingProjectId = null;
+    // adminSubmitBtn.textContent = '➕ Add Project';
+    // document.querySelector('.admin-box h3').textContent = '📂 Add New Project';
 }
 
 adminCloseBtn.addEventListener('click', closeAdminPanel);
