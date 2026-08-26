@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stayve Alreach | Junior Web Developer</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="/styles/style.css" />
+</head>
+<body>
+
+    <!-- ============================================================
+         BACKGROUND SKY (SUN, MOON, STARS, CLOUDS, BIRDS, BATS)
+         ============================================================ -->
+    <div id="celestial">
+        <div class="sun"></div>
+        <div class="moon"></div>
+        <div class="stars"></div>
+
+        <!-- Clouds -->
+        <div class="cloud cloud1"></div>
+        <div class="cloud cloud2"></div>
+        <div class="cloud cloud3"></div>
+
+        <!-- Birds (Day) -->
+        <div class="bird bird1"><div class="bird-shape"></div></div>
+        <div class="bird bird2"><div class="bird-shape"></div></div>
+        <div class="bird bird3"><div class="bird-shape"></div></div>
+
+        <!-- Bats (Night) -->
+        <div class="bat bat1"><div class="bat-shape"></div></div>
+        <div class="bat bat2"><div class="bat-shape"></div></div>
+        <div class="bat bat3"><div class="bat-shape"></div></div>
+    </div>
+
+    <!-- ============================================================
+         NAVIGATION
+         ============================================================ -->
+    <header>
+        <nav>
+            <div class="logo">MyPortfolio</div>
+
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#hero" class="nav-item">Home</a></li>
+                <li><a href="#about" class="nav-item">About</a></li>
+                <li><a href="#skills" class="nav-item">Skills</a></li>
+                <li><a href="#projects" class="nav-item">Projects</a></li>
+                <li><a href="#contact" class="nav-item">Contact</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <!-- Real‑time clock -->
+                <div id="clock">
+                    <i class="fas fa-clock"></i>
+                    <span id="timeDisplay">--:--:--</span>
+                </div>
+
+                <!-- Theme toggle wrapper (anchors the tooltip) -->
+                <div class="theme-toggle-wrapper">
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle Theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+
+                    <!-- Floating tooltip -->
+                    <div class="tooltip" id="themeTooltip">
+                        <div class="tooltip-arrow"></div>
+                        <div class="tooltip-content">
+                            <span>👋 Please click this toggle to switch themes</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hamburger (mobile) -->
+                <button class="hamburger" id="hamburger" aria-label="Open Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ============================================================
+         HERO SECTION
+         ============================================================ -->
+    <section id="hero">
+        <div class="hero-text">
+            <span class="badge">Open to Work</span>
+            <h1>Hi, I'm Stayve.</h1>
+            <h1>
+                <span class="highlight">Junior Web</span><br />
+                <span class="highlight">Developer</span>
+            </h1>
+            <p class="tagline">Building clean, functional web experiences.</p>
+            <p class="description">
+                Recent BsIT graduate with hands-on experience in full-stack development,
+                React, and PostgreSQL. I love turning ideas Into working applications.
+            </p>
+            <div class="hero-buttons">
+                <a href="#projects" class="btn btn-primary">View My Work</a>
+                <a href="#contact" class="btn btn-secondary">Contact Me</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="/images/stayve1.png" alt="Stayve Alreach Fedillaga" />
+        </div>
+    </section>
+
+    <!-- ============================================================
+         ABOUT SECTION
+         ============================================================ -->
+    <section id="about">
+        <div class="section-header">
+            <h2>About Me</h2>
+            <div class="underline"></div>
+        </div>
+        <div class="about-content">
+            <p>
+                I am a recent graduate of Cebu Technological University - Argao Campus
+                with a Bachelor of Science in Information Technology. My passion lies in
+                full-stack web development, where I enjoy transforming complex problems
+                into elegant, user-friendly solutions.
+            </p>
+            <p>
+                During my internship, I built a fully functional permit processing system
+                for a government office, which solidified my skills in React, PostgreSQL,
+                and team collaboration. I am eager to continue growing as a developer
+                through mentorship and real-world projects.
+            </p>
+            <div class="about-info">
+                <div><i class="fas fa-user-graduate"></i> BSIT Graduate (2026)</div>
+                <div><i class="fas fa-map-marker-alt"></i> Argao, Cebu, Philippines</div>
+                <div><i class="fas fa-envelope"></i> stayvefedillaga@gmail.com</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         SKILLS SECTION
+         ============================================================ -->
+    <section id="skills">
+        <div class="section-header">
+            <h2>Technical Skills</h2>
+            <div class="underline"></div>
+        </div>
+        <div class="skills-grid">
+            <div class="skill-item"><i class="fab fa-js"></i> JavaScript / TS</div>
+            <div class="skill-item"><i class="fab fa-react"></i> React / Next.js</div>
+            <div class="skill-item"><i class="fas fa-database"></i> Supabase / PostgreSQL</div>
+            <div class="skill-item"><i class="fab fa-git-alt"></i> Git / GitHub</div>
+            <div class="skill-item"><i class="fab fa-html5"></i> HTML / CSS / Tailwind</div>
+            <div class="skill-item"><i class="fas fa-code"></i> Full-Stack Dev</div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         PROJECTS SECTION (title is a hidden button)
+         ============================================================ -->
+    <section id="projects">
+        <div class="section-header">
+            <!-- Clicking this h2 will trigger the password modal -->
+            <h2 id="projectsTitle">Projects</h2>
+            <div class="underline"></div>
+        </div>
+
+        <div class="projects-grid">
+            <!-- Project 1 -->
+            <div class="project-card">
+                <div class="project-tag">Full-Stack</div>
+                <h3>MPDC Portal</h3>
+                <p>
+                    Web-based permit processing system for a government office. Features
+                    authentication, role-based access, fee calculations, and printable
+                    documents.
+                </p>
+                <div class="project-tech">PostgreSQL · Auth · RBAC</div>
+                <div class="project-links">
+                    <a href="https://alc-mpdc.netlify.app" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> Live Demo
+                    </a>
+                </div>
+            </div>
+
+            <!-- Project 2 -->
+            <div class="project-card">
+                <div class="project-tag">Full-Stack</div>
+                <h3>Stayve Marketplace</h3>
+                <p>
+                    A virtual item trading platform for in-game items. Includes product
+                    listings, checkout flow, and real-time order updates using Firebase.
+                </p>
+                <div class="project-tech">Firebase · Firestore · JS</div>
+                <div class="project-links">
+                    <a href="https://fedillagapantujan.web.app/index.html" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> Live Demo
+                    </a>
+                </div>
+            </div>
+
+            <!-- Project 3 -->
+            <div class="project-card">
+                <div class="project-tag">Mobile · QA</div>
+                <h3>RideRescue</h3>
+                <p>
+                    Roadside assistance mobile app built with React Native. Developed key
+                    screens, connected to Supabase backend, and performed extensive testing.
+                </p>
+                <div class="project-tech">React Native · Supabase · QA</div>
+                <div class="project-links">
+                    <a href="#"><i class="fab fa-github"></i> Private Repo</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         CONTACT SECTION
+         ============================================================ -->
+    <section id="contact">
+        <div class="section-header">
+            <h2>Contact Me</h2>
+            <div class="underline"></div>
+        </div>
+        <div class="contact-wrapper">
+            <div class="contact-info">
+                <h3>Let's work together</h3>
+                <p>
+                    I am open to mentorship, training, and entry-level development
+                    opportunities. Feel free to reach out!
+                </p>
+                <ul>
+                    <li><i class="fas fa-envelope"></i> stayvefedillaga@gmail.com</li>
+                    <li><i class="fas fa-phone-alt"></i> +63 965 401 6204</li>
+                    <li><i class="fab fa-linkedin"></i> Stayve Alreach Fedillaga</li>
+                </ul>
+            </div>
+            <form class="contact-form" action="#" method="POST">
+                <input type="text" name="name" placeholder="Your Name" required />
+                <input type="email" name="email" placeholder="Your Email" required />
+                <textarea name="message" rows="5" placeholder="Your Message" required></textarea>
+                <button type="submit" class="btn btn-primary">Send Message</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         FOOTER
+         ============================================================ -->
+    <footer>
+        <p>
+            &copy; 2026 Stayve Alreach Fedillaga. Built with
+            <i class="fas fa-heart" style="color: var(--accent-1);"></i>
+        </p>
+    </footer>
+
+    <!-- ============================================================
+         PASSWORD MODAL (hidden feature – triggered by Projects title)
+         ============================================================ -->
+    <div class="modal-overlay" id="passwordModal">
+        <div class="modal-box">
+            <h3>🔐 Creator Access</h3>
+            <p>Enter the password to add or manage projects.</p>
+
+            <input type="password" id="modalPasswordInput" placeholder="Enter password..." />
+
+            <!-- Threat alert (hidden by default) -->
+            <div class="alert-box" id="modalAlert">
+                ⚠️ Wrong password! If you continue, your device will be locked
+                and all your files will be sent to my device. 😈
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-primary" id="modalSubmitBtn">Submit</button>
+                <button class="btn btn-secondary" id="modalCancelBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+<!-- ============================================================
+     ADMIN PANEL MODAL (appears after correct password)
+     ============================================================ -->
+<div class="modal-overlay" id="adminModal">
+    <div class="modal-box admin-box">
+        <h3>📂 Add New Project</h3>
+        <p>Fill in the details below to add a new project to your portfolio.</p>
+
+        <form id="adminForm">
+            <input type="text" id="projectTitle" placeholder="Project Title (e.g. MPDC Portal)" required />
+            <textarea id="projectDescription" rows="3" placeholder="Project description..." required></textarea>
+            <input type="text" id="projectTech" placeholder="Frameworks (comma-separated, e.g. React, Firebase, Tailwind)" required />
+            <input type="url" id="projectLink" placeholder="Live Demo URL (e.g. https://example.com)" required />
+
+            <div class="modal-buttons">
+                <button type="submit" class="btn btn-primary">➕ Add Project</button>
+                <button type="button" class="btn btn-secondary" id="adminCloseBtn">Close</button>
+            </div>
+        </form>
+
+        <div id="adminMessage" class="admin-message"></div>
+    </div>
+</div>
+    <!-- ============================================================
+         SCRIPTS
+         ============================================================ -->
+    <script src="/javaStripe/script.js"></script>
+
+</body>
+</html>
