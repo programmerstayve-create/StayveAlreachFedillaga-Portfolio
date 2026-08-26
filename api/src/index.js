@@ -171,7 +171,7 @@ async function handleContact(request, env) {
                 },
                 body: JSON.stringify({
                     from: 'Portfolio Contact <onboarding@resend.dev>',
-                    to: ['stayvefedillaga@gmail.com'],
+                    to: ['programmerstayve@gmail.com'],
                     subject: `New message from ${name}`,
                     reply_to: email,
                     html: `
