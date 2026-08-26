@@ -1,0 +1,8 @@
+name = "portfolio-api"
+main = "src/index.js"
+compatibility_date = "2024-12-18"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "portfolio-projects"
+database_id = "49ae5b22-5498-4b12-899b-476a90a65983"

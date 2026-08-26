@@ -1,4 +1,9 @@
 // ============================================================
+// API CONFIGURATION
+// ============================================================
+const API_URL = 'https://portfolio-api.programmerstayve.workers.dev/api/projects';
+
+// ============================================================
 // DOM ELEMENTS
 // ============================================================
 const themeToggle = document.getElementById('themeToggle');
@@ -17,8 +22,22 @@ const modalCancel = document.getElementById('modalCancelBtn');
 const modalAlert = document.getElementById('modalAlert');
 const projectsTitle = document.getElementById('projectsTitle');
 
+// Admin panel elements
+const adminModal = document.getElementById('adminModal');
+const adminForm = document.getElementById('adminForm');
+const adminCloseBtn = document.getElementById('adminCloseBtn');
+const adminMessage = document.getElementById('adminMessage');
+const projectTitle = document.getElementById('projectTitle');
+const projectDescription = document.getElementById('projectDescription');
+const projectTech = document.getElementById('projectTech');
+const projectLink = document.getElementById('projectLink');
+const projectsGrid = document.querySelector('.projects-grid');
+
+// Store password for API calls
+let currentPassword = '';
+
 // ============================================================
-// THEME TOGGLE (with localStorage)
+// THEME TOGGLE
 // ============================================================
 let currentTheme = localStorage.getItem('theme') || 'dark';
 document.body.classList.toggle('light-mode', currentTheme === 'light');
@@ -41,7 +60,7 @@ function updateThemeIcon(theme) {
 }
 
 // ============================================================
-// REAL-TIME CLOCK (12-hour format)
+// REAL-TIME CLOCK
 // ============================================================
 function updateClock() {
     const now = new Date();
@@ -49,30 +68,23 @@ function updateClock() {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
     const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12 || 12; // convert 0 to 12
+    hours = hours % 12 || 12;
     timeDisplay.textContent = `${hours}:${minutes}:${seconds} ${ampm}`;
 }
 setInterval(updateClock, 1000);
 updateClock();
 
 // ============================================================
-// TOOLTIP (show on load, hide after 8s or on interaction)
+// TOOLTIP
 // ============================================================
-setTimeout(() => {
-    tooltip.classList.add('visible');
-}, 800);
+setTimeout(() => tooltip.classList.add('visible'), 800);
+let tooltipTimeout = setTimeout(() => tooltip.classList.remove('visible'), 8000);
 
-let tooltipTimeout = setTimeout(() => {
-    tooltip.classList.remove('visible');
-}, 8000);
-
-// Hide on toggle click
 themeToggle.addEventListener('click', () => {
     tooltip.classList.remove('visible');
     clearTimeout(tooltipTimeout);
 });
 
-// Hide on outside click
 document.addEventListener('click', (e) => {
     const isTooltip = tooltip.contains(e.target);
     const isToggle = themeToggle.contains(e.target);
@@ -82,7 +94,6 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Hide on scroll
 window.addEventListener('scroll', () => {
     if (tooltip.classList.contains('visible')) {
         tooltip.classList.remove('visible');
@@ -91,7 +102,7 @@ window.addEventListener('scroll', () => {
 });
 
 // ============================================================
-// HAMBURGER MENU (mobile)
+// HAMBURGER MENU
 // ============================================================
 hamburger.addEventListener('click', () => {
     navLinks.classList.toggle('active');
@@ -100,7 +111,6 @@ hamburger.addEventListener('click', () => {
     icon.classList.toggle('fa-times');
 });
 
-// Close menu when a link is clicked
 navItems.forEach(item => {
     item.addEventListener('click', () => {
         navLinks.classList.remove('active');
@@ -110,7 +120,6 @@ navItems.forEach(item => {
     });
 });
 
-// Close menu on outside click
 document.addEventListener('click', (e) => {
     const isInside = navLinks.contains(e.target) || hamburger.contains(e.target);
     if (!isInside && navLinks.classList.contains('active')) {
@@ -122,7 +131,7 @@ document.addEventListener('click', (e) => {
 });
 
 // ============================================================
-// SCROLL ANIMATIONS (Intersection Observer)
+// SCROLL ANIMATIONS
 // ============================================================
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -135,124 +144,81 @@ const observer = new IntersectionObserver((entries) => {
 sections.forEach(section => observer.observe(section));
 
 // ============================================================
-// PASSWORD MODAL (hidden feature – click on "Projects" title)
+// API FUNCTIONS
 // ============================================================
-let attemptCount = 0;
-
-// Open modal when Projects title is clicked
-projectsTitle.addEventListener('click', () => {
-    modalOverlay.classList.add('active');
-    modalInput.value = '';
-    modalAlert.classList.remove('show');
-    modalInput.focus();
-});
-
-// Close modal (cancel button or outside click)
-function closeModal() {
-    modalOverlay.classList.remove('active');
-    modalAlert.classList.remove('show');
-    attemptCount = 0; // reset attempts when closed manually
+async function fetchProjects() {
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        return data.success ? data.projects : [];
+    } catch (error) {
+        console.error('Failed to fetch projects:', error);
+        return [];
+    }
 }
 
-modalCancel.addEventListener('click', closeModal);
-
-// Click outside modal to close
-modalOverlay.addEventListener('click', (e) => {
-    if (e.target === modalOverlay) {
-        closeModal();
+async function addProjectToAPI(project, password) {
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                ...project,
+                password: password,
+            }),
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Failed to add project:', error);
+        return { success: false, error: error.message };
     }
-});
-
-// Handle password submission
-modalSubmit.addEventListener('click', () => {
-    const password = modalInput.value.trim();
-
-    if (password === 'zephan') {
-    closeModal();
-    openAdminPanel(); // Opens the admin panel instead of just alert
-    return;
 }
 
-    // Wrong password
-    attemptCount++;
-    modalAlert.classList.add('show');
-
-    if (attemptCount >= 2) {
-        // Threat escalation
-        alert(
-            '⚠️ WARNING: You have entered the wrong password twice.\n' +
-            'Your device will be locked and all your files will be sent to my device. 😈\n\n' +
-            'Just kidding... but seriously, stop trying. 😉'
-        );
-        closeModal();
-        attemptCount = 0;
-    } else {
-        // Show the alert box with the threat
-        // The alert box is already visible; we can also shake it
-        modalAlert.style.animation = 'none';
-        setTimeout(() => modalAlert.style.animation = 'shake 0.5s ease', 10);
-        modalInput.value = '';
-        modalInput.focus();
-    }
-});
-
-// Also allow Enter key in the input field
-modalInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-        modalSubmit.click();
-    }
-});
-
-// ============================================================
-// ADMIN PANEL – Add & Delete Projects (with localStorage)
-// ============================================================
-const adminModal = document.getElementById('adminModal');
-const adminForm = document.getElementById('adminForm');
-const adminCloseBtn = document.getElementById('adminCloseBtn');
-const adminMessage = document.getElementById('adminMessage');
-
-// Form fields
-const projectTitle = document.getElementById('projectTitle');
-const projectDescription = document.getElementById('projectDescription');
-const projectTech = document.getElementById('projectTech');
-const projectLink = document.getElementById('projectLink');
-
-// Projects grid container
-const projectsGrid = document.querySelector('.projects-grid');
-
-// ============================================================
-// Load projects from localStorage
-// ============================================================
-function loadProjects() {
-    const saved = localStorage.getItem('portfolioProjects');
-    if (saved) {
-        try {
-            const projects = JSON.parse(saved);
-            // Remove existing project cards (but keep the grid container)
-            const cards = projectsGrid.querySelectorAll('.project-card');
-            cards.forEach(card => card.remove());
-            // Re-render all projects
-            projects.forEach(project => renderProject(project));
-        } catch (e) {
-            console.error('Failed to load projects:', e);
-        }
+async function deleteProjectFromAPI(id, password) {
+    try {
+        const response = await fetch(`${API_URL}/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ password }),
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Failed to delete project:', error);
+        return { success: false, error: error.message };
     }
 }
 
 // ============================================================
-// Render a single project card
+// LOAD PROJECTS
+// ============================================================
+async function loadProjects() {
+    const projects = await fetchProjects();
+
+    const cards = projectsGrid.querySelectorAll('.project-card');
+    cards.forEach(card => card.remove());
+
+    projects.forEach(project => renderProject(project));
+}
+
+// ============================================================
+// RENDER A PROJECT
 // ============================================================
 function renderProject(project) {
     const card = document.createElement('div');
     card.className = 'project-card';
-    card.dataset.id = project.id || Date.now();
+    card.dataset.id = project.id;
 
-    // Generate tech tags
     const techTags = project.tech.split(',').map(t => t.trim()).filter(t => t);
     const techHTML = techTags.map(t => `<span>${t}</span>`).join(' · ');
 
+    const tag = project.tag || 'Full-Stack';
+
     card.innerHTML = `
-        <div class="project-tag">Full-Stack</div>
+        <div class="project-tag">${escapeHTML(tag)}</div>
         <h3>${escapeHTML(project.title)}</h3>
         <p>${escapeHTML(project.description)}</p>
         <div class="project-tech">${techHTML}</div>
@@ -261,23 +227,39 @@ function renderProject(project) {
                 <i class="fas fa-external-link-alt"></i> Live Demo
             </a>
         </div>
-        <button class="delete-project" data-id="${project.id || Date.now()}">
+        <button class="delete-project" data-id="${project.id}">
             <i class="fas fa-trash-alt"></i> Delete Project
         </button>
     `;
 
     projectsGrid.appendChild(card);
 
-    // Add delete event listener
     const deleteBtn = card.querySelector('.delete-project');
     deleteBtn.addEventListener('click', function() {
         const id = this.dataset.id;
-        deleteProject(id);
+        handleDeleteProject(id);
     });
 }
 
 // ============================================================
-// Helper: escape HTML to prevent XSS
+// HANDLE DELETE PROJECT
+// ============================================================
+async function handleDeleteProject(id) {
+    const password = prompt('Enter admin password to delete this project:');
+    if (!password) return;
+
+    const result = await deleteProjectFromAPI(id, password);
+
+    if (result.success) {
+        alert('✅ Project deleted successfully!');
+        await loadProjects();
+    } else {
+        alert('❌ ' + (result.error || 'Failed to delete project'));
+    }
+}
+
+// ============================================================
+// HELPERS
 // ============================================================
 function escapeHTML(str) {
     const div = document.createElement('div');
@@ -285,47 +267,6 @@ function escapeHTML(str) {
     return div.innerHTML;
 }
 
-// ============================================================
-// Save project to localStorage
-// ============================================================
-function saveProject(project) {
-    const saved = localStorage.getItem('portfolioProjects');
-    let projects = saved ? JSON.parse(saved) : [];
-
-    // Add unique ID
-    project.id = Date.now();
-    projects.push(project);
-
-    localStorage.setItem('portfolioProjects', JSON.stringify(projects));
-    return project;
-}
-
-// ============================================================
-// Delete project from localStorage and DOM
-// ============================================================
-function deleteProject(id) {
-    if (!confirm('Are you sure you want to delete this project?')) return;
-
-    let saved = localStorage.getItem('portfolioProjects');
-    if (!saved) return;
-
-    let projects = JSON.parse(saved);
-    projects = projects.filter(p => p.id != id);
-
-    localStorage.setItem('portfolioProjects', JSON.stringify(projects));
-
-    // Remove card from DOM
-    const card = projectsGrid.querySelector(`.project-card[data-id="${id}"]`);
-    if (card) card.remove();
-
-    // Show brief feedback
-    showAdminMessage('✅ Project deleted successfully!', 'success');
-    setTimeout(() => hideAdminMessage(), 2000);
-}
-
-// ============================================================
-// Show/hide admin messages
-// ============================================================
 function showAdminMessage(text, type = 'success') {
     adminMessage.textContent = text;
     adminMessage.className = 'admin-message ' + type;
@@ -336,69 +277,73 @@ function hideAdminMessage() {
 }
 
 // ============================================================
-// Handle form submission (Add Project)
+// PASSWORD MODAL
 // ============================================================
-adminForm.addEventListener('submit', function(e) {
-    e.preventDefault();
+let attemptCount = 0;
 
-    const title = projectTitle.value.trim();
-    const description = projectDescription.value.trim();
-    const tech = projectTech.value.trim();
-    const link = projectLink.value.trim();
+projectsTitle.addEventListener('click', () => {
+    modalOverlay.classList.add('active');
+    modalInput.value = '';
+    modalAlert.classList.remove('show');
+    modalInput.focus();
+});
 
-    // Validation
-    if (!title || !description || !tech || !link) {
-        showAdminMessage('⚠️ Please fill in all fields.', 'error');
+function closeModal() {
+    modalOverlay.classList.remove('active');
+    modalAlert.classList.remove('show');
+    attemptCount = 0;
+}
+
+modalCancel.addEventListener('click', closeModal);
+
+modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) {
+        closeModal();
+    }
+});
+
+modalSubmit.addEventListener('click', () => {
+    const password = modalInput.value.trim();
+
+    if (!password) {
+        modalAlert.classList.add('show');
+        modalAlert.textContent = '⚠️ Please enter a password.';
+        modalAlert.style.animation = 'none';
+        setTimeout(() => modalAlert.style.animation = 'shake 0.5s ease', 10);
         return;
     }
 
-    // Validate URL
-    try {
-        new URL(link);
-    } catch (_) {
-        showAdminMessage('⚠️ Please enter a valid URL (e.g. https://example.com)', 'error');
-        return;
+    // Close modal and open admin panel with the password
+    // The Worker will validate it
+    closeModal();
+    openAdminPanel(password);
+});
+
+modalInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        modalSubmit.click();
     }
-
-    // Create project object
-    const project = { title, description, tech, link };
-
-    // Save and render
-    const savedProject = saveProject(project);
-    renderProject(savedProject);
-
-    // Clear form
-    adminForm.reset();
-
-    // Show success message
-    showAdminMessage('✅ Project added successfully!', 'success');
-    setTimeout(() => hideAdminMessage(), 2500);
 });
 
 // ============================================================
-// Open admin panel (called after correct password)
+// ADMIN PANEL
 // ============================================================
-function openAdminPanel() {
+function openAdminPanel(password) {
+    currentPassword = password;
     adminModal.classList.add('active');
     adminForm.reset();
     hideAdminMessage();
-    // Enable admin mode (shows delete buttons)
     document.body.classList.add('admin-mode');
 }
 
-// ============================================================
-// Close admin panel
-// ============================================================
 function closeAdminPanel() {
     adminModal.classList.remove('active');
     hideAdminMessage();
-    // Remove admin mode if no projects are being managed
-    // Keep it on so delete buttons remain visible
+    currentPassword = '';
 }
 
 adminCloseBtn.addEventListener('click', closeAdminPanel);
 
-// Click outside modal to close
 adminModal.addEventListener('click', function(e) {
     if (e.target === adminModal) {
         closeAdminPanel();
@@ -406,46 +351,56 @@ adminModal.addEventListener('click', function(e) {
 });
 
 // ============================================================
-// OVERRIDE: When password is correct, open admin panel
+// ADMIN FORM – Add Project
 // ============================================================
-// Find the existing password submit handler and replace it
-// (Keep your existing code, just modify the "correct password" part)
+adminForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
 
-// --- MODIFICATION ---
-// In your existing password submit handler, replace the success block:
+    const title = projectTitle.value.trim();
+    const description = projectDescription.value.trim();
+    const tech = projectTech.value.trim();
+    const link = projectLink.value.trim();
 
-// Find this code in your script (around line 100-110):
-/*
-if (password === 'zephan') {
-    alert('✅ Access granted! You can now add or manage projects.');
-    closeModal();
-    // Here you could redirect to a hidden admin panel or show a form
-    return;
-}
-*/
+    if (!title || !description || !tech || !link) {
+        showAdminMessage('⚠️ Please fill in all fields.', 'error');
+        return;
+    }
 
-// Replace it with:
-/*
-if (password === 'zephan') {
-    closeModal();
-    openAdminPanel(); // Opens the admin panel instead of just alert
-    return;
-}
-*/
+    try {
+        new URL(link);
+    } catch (_) {
+        showAdminMessage('⚠️ Please enter a valid URL (e.g. https://example.com)', 'error');
+        return;
+    }
 
-// ============================================================
-// Load saved projects on page load
-// ============================================================
-// Load projects from localStorage when the page loads
-document.addEventListener('DOMContentLoaded', function() {
-    loadProjects();
+    if (!currentPassword) {
+        showAdminMessage('⚠️ Password session expired. Please re-enter.', 'error');
+        setTimeout(() => closeAdminPanel(), 1500);
+        return;
+    }
+
+    showAdminMessage('⏳ Adding project...', 'success');
+
+    const result = await addProjectToAPI({ title, description, tech, link }, currentPassword);
+
+    if (result.success) {
+        showAdminMessage('✅ Project added successfully!', 'success');
+        adminForm.reset();
+        await loadProjects();
+        setTimeout(() => hideAdminMessage(), 2500);
+    } else {
+        if (result.error && result.error.includes('Unauthorized')) {
+            showAdminMessage('⚠️ Incorrect password. Please try again.', 'error');
+            setTimeout(() => closeAdminPanel(), 2000);
+        } else {
+            showAdminMessage('❌ ' + (result.error || 'Failed to add project'), 'error');
+        }
+    }
 });
 
 // ============================================================
-// Also load projects if they were added after page load
-// (For safety, call it after everything is set up)
+// LOAD PROJECTS ON PAGE LOAD
 // ============================================================
-// Wait a tiny bit for the DOM to be fully ready
-setTimeout(() => {
+document.addEventListener('DOMContentLoaded', function() {
     loadProjects();
-}, 100);
+});
