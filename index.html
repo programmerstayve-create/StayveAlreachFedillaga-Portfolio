@@ -224,6 +224,20 @@
          CONTACT SECTION
          ============================================================ -->
     <section id="contact">
+        <!-- Floating Contact Notification -->
+<div class="contact-notification" id="contactNotification">
+    <div class="notification-content">
+        <span class="notification-icon">💬</span>
+        <p class="notification-text">
+            Any message you send here will be delivered directly to my email 
+            <span style="color: var(--accent-1); font-weight: 600;">and</span> 
+            Discord server. Feel free to reach out anytime!
+        </p>
+        <button class="notification-close" id="closeNotification">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+</div>
         <div class="section-header">
             <h2>Contact Me</h2>
             <div class="underline"></div>
@@ -291,16 +305,25 @@
         <p>Fill in the details below to add a new project to your portfolio.</p>
 
         <form id="adminForm">
-            <input type="text" id="projectTitle" placeholder="Project Title (e.g. MPDC Portal)" required />
-            <textarea id="projectDescription" rows="3" placeholder="Project description..." required></textarea>
-            <input type="text" id="projectTech" placeholder="Frameworks (comma-separated, e.g. React, Firebase, Tailwind)" required />
-            <input type="url" id="projectLink" placeholder="Live Demo URL (e.g. https://example.com)" required />
+    <input type="text" id="projectTitle" placeholder="Project Title" required />
+    <textarea id="projectDescription" rows="3" placeholder="Project description..." required></textarea>
+    <input type="text" id="projectTech" placeholder="Frameworks (comma-separated)" required />
+    <input type="url" id="projectLink" placeholder="Live Demo URL (or leave empty)" />
+    
+    <!-- NEW: Live Demo Toggle -->
+    <label style="display:flex; align-items:center; gap:10px; cursor:pointer; color:var(--text-secondary); font-size:0.95rem;">
+        <input type="checkbox" id="projectLiveDemo" checked />
+        <span>✅ This project has a Live Demo</span>
+    </label>
 
-            <div class="modal-buttons">
-                <button type="submit" class="btn btn-primary">➕ Add Project</button>
-                <button type="button" class="btn btn-secondary" id="adminCloseBtn">Close</button>
-            </div>
-        </form>
+    <!-- NEW: Images for slideshow -->
+    <textarea id="projectImages" rows="2" placeholder="Image URLs (comma-separated, e.g. https://example.com/image1.jpg, https://example.com/image2.jpg)"></textarea>
+
+    <div class="modal-buttons">
+        <button type="submit" class="btn btn-primary" id="adminSubmitBtn">➕ Add Project</button>
+        <button type="button" class="btn btn-secondary" id="adminCloseBtn">Close</button>
+    </div>
+</form>
 
         <div id="adminMessage" class="admin-message"></div>
     </div>

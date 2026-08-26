@@ -2,6 +2,8 @@
 // API CONFIGURATION
 // ============================================================
 const API_URL = 'https://portfolio-api.programmerstayve.workers.dev/api/projects';
+let currentPassword = '';
+let editingProjectId = null;
 
 // ============================================================
 // DOM ELEMENTS
@@ -14,7 +16,6 @@ const sections = document.querySelectorAll('section');
 const timeDisplay = document.getElementById('timeDisplay');
 const tooltip = document.getElementById('themeTooltip');
 
-// Modal elements
 const modalOverlay = document.getElementById('passwordModal');
 const modalInput = document.getElementById('modalPasswordInput');
 const modalSubmit = document.getElementById('modalSubmitBtn');
@@ -22,19 +23,18 @@ const modalCancel = document.getElementById('modalCancelBtn');
 const modalAlert = document.getElementById('modalAlert');
 const projectsTitle = document.getElementById('projectsTitle');
 
-// Admin panel elements
 const adminModal = document.getElementById('adminModal');
 const adminForm = document.getElementById('adminForm');
 const adminCloseBtn = document.getElementById('adminCloseBtn');
 const adminMessage = document.getElementById('adminMessage');
+const adminSubmitBtn = document.getElementById('adminSubmitBtn');
 const projectTitle = document.getElementById('projectTitle');
 const projectDescription = document.getElementById('projectDescription');
 const projectTech = document.getElementById('projectTech');
 const projectLink = document.getElementById('projectLink');
+const projectLiveDemo = document.getElementById('projectLiveDemo');
+const projectImages = document.getElementById('projectImages');
 const projectsGrid = document.querySelector('.projects-grid');
-
-// Store password for API calls
-let currentPassword = '';
 
 // ============================================================
 // THEME TOGGLE
@@ -161,17 +161,24 @@ async function addProjectToAPI(project, password) {
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                ...project,
-                password: password,
-            }),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...project, password }),
         });
         return await response.json();
     } catch (error) {
-        console.error('Failed to add project:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+async function editProjectToAPI(id, project, password) {
+    try {
+        const response = await fetch(`${API_URL}/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...project, password }),
+        });
+        return await response.json();
+    } catch (error) {
         return { success: false, error: error.message };
     }
 }
@@ -180,20 +187,17 @@ async function deleteProjectFromAPI(id, password) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
             method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ password }),
         });
         return await response.json();
     } catch (error) {
-        console.error('Failed to delete project:', error);
         return { success: false, error: error.message };
     }
 }
 
 // ============================================================
-// LOAD PROJECTS
+// LOAD & RENDER PROJECTS
 // ============================================================
 async function loadProjects() {
     const projects = await fetchProjects();
@@ -201,12 +205,15 @@ async function loadProjects() {
     const cards = projectsGrid.querySelectorAll('.project-card');
     cards.forEach(card => card.remove());
 
-    projects.forEach(project => renderProject(project));
+    // Sort: live_demo first (1), then non-live (0)
+    const sorted = [...projects].sort((a, b) => {
+        if (a.live_demo === b.live_demo) return b.id - a.id;
+        return b.live_demo - a.live_demo;
+    });
+
+    sorted.forEach(project => renderProject(project));
 }
 
-// ============================================================
-// RENDER A PROJECT
-// ============================================================
 function renderProject(project) {
     const card = document.createElement('div');
     card.className = 'project-card';
@@ -215,7 +222,20 @@ function renderProject(project) {
     const techTags = project.tech.split(',').map(t => t.trim()).filter(t => t);
     const techHTML = techTags.map(t => `<span>${t}</span>`).join(' · ');
 
-    const tag = project.tag || 'Full-Stack';
+    const tag = project.live_demo === 1 ? '✅ Live Demo' : '🔒 No Demo';
+
+    // Images button – only show if images exist
+    const imagesList = project.images ? project.images.split(',').map(img => img.trim()).filter(img => img) : [];
+    const hasImages = imagesList.length > 0;
+
+    let imagesButtonHTML = '';
+    if (hasImages) {
+        imagesButtonHTML = `
+            <button class="view-images-btn" data-id="${project.id}">
+                <i class="fas fa-images"></i> View Screenshots
+            </button>
+        `;
+    }
 
     card.innerHTML = `
         <div class="project-tag">${escapeHTML(tag)}</div>
@@ -223,22 +243,129 @@ function renderProject(project) {
         <p>${escapeHTML(project.description)}</p>
         <div class="project-tech">${techHTML}</div>
         <div class="project-links">
-            <a href="${escapeHTML(project.link)}" target="_blank">
-                <i class="fas fa-external-link-alt"></i> Live Demo
-            </a>
+            ${project.live_demo === 1 && project.link && project.link !== '#' ? 
+                `<a href="${escapeHTML(project.link)}" target="_blank">
+                    <i class="fas fa-external-link-alt"></i> Live Demo
+                </a>` : 
+                `<span style="color: var(--text-secondary); font-size:0.9rem;">No live demo available</span>`
+            }
         </div>
-        <button class="delete-project" data-id="${project.id}">
-            <i class="fas fa-trash-alt"></i> Delete Project
-        </button>
+        <div class="project-actions">
+            ${imagesButtonHTML}
+            <button class="edit-project" data-id="${project.id}">
+                <i class="fas fa-edit"></i> Edit
+            </button>
+            <button class="delete-project" data-id="${project.id}">
+                <i class="fas fa-trash-alt"></i> Delete
+            </button>
+        </div>
     `;
 
     projectsGrid.appendChild(card);
 
+    // Add event listeners
     const deleteBtn = card.querySelector('.delete-project');
     deleteBtn.addEventListener('click', function() {
         const id = this.dataset.id;
         handleDeleteProject(id);
     });
+
+    const editBtn = card.querySelector('.edit-project');
+    editBtn.addEventListener('click', function() {
+        const id = this.dataset.id;
+        handleEditProject(id);
+    });
+
+    if (hasImages) {
+        const imagesBtn = card.querySelector('.view-images-btn');
+        imagesBtn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            openImageGallery(id, imagesList);
+        });
+    }
+}
+
+// ============================================================
+// IMAGE GALLERY (Slideshow Modal)
+// ============================================================
+let currentGalleryIndex = 0;
+let currentGalleryImages = [];
+
+function openImageGallery(id, images) {
+    currentGalleryImages = images;
+    currentGalleryIndex = 0;
+
+    // Create modal if it doesn't exist
+    let galleryModal = document.getElementById('galleryModal');
+    if (!galleryModal) {
+        galleryModal = document.createElement('div');
+        galleryModal.id = 'galleryModal';
+        galleryModal.className = 'modal-overlay';
+        galleryModal.innerHTML = `
+            <div class="modal-box gallery-box">
+                <div class="gallery-container">
+                    <button class="gallery-close">&times;</button>
+                    <div class="gallery-slide">
+                        <img id="galleryImage" src="" alt="Screenshot">
+                    </div>
+                    <div class="gallery-nav">
+                        <button class="gallery-prev">❮</button>
+                        <span id="galleryCounter">1 / 1</span>
+                        <button class="gallery-next">❯</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(galleryModal);
+
+        // Close button
+        galleryModal.querySelector('.gallery-close').addEventListener('click', closeGallery);
+        galleryModal.addEventListener('click', (e) => {
+            if (e.target === galleryModal) closeGallery();
+        });
+
+        // Navigation
+        galleryModal.querySelector('.gallery-prev').addEventListener('click', () => {
+            currentGalleryIndex = (currentGalleryIndex - 1 + currentGalleryImages.length) % currentGalleryImages.length;
+            updateGalleryImage();
+        });
+        galleryModal.querySelector('.gallery-next').addEventListener('click', () => {
+            currentGalleryIndex = (currentGalleryIndex + 1) % currentGalleryImages.length;
+            updateGalleryImage();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (!galleryModal.classList.contains('active')) return;
+            if (e.key === 'ArrowLeft') {
+                currentGalleryIndex = (currentGalleryIndex - 1 + currentGalleryImages.length) % currentGalleryImages.length;
+                updateGalleryImage();
+            }
+            if (e.key === 'ArrowRight') {
+                currentGalleryIndex = (currentGalleryIndex + 1) % currentGalleryImages.length;
+                updateGalleryImage();
+            }
+            if (e.key === 'Escape') closeGallery();
+        });
+    }
+
+    galleryModal.classList.add('active');
+    updateGalleryImage();
+}
+
+function updateGalleryImage() {
+    const img = document.getElementById('galleryImage');
+    const counter = document.getElementById('galleryCounter');
+    if (img && currentGalleryImages.length > 0) {
+        img.src = currentGalleryImages[currentGalleryIndex];
+        img.alt = `Screenshot ${currentGalleryIndex + 1}`;
+        if (counter) {
+            counter.textContent = `${currentGalleryIndex + 1} / ${currentGalleryImages.length}`;
+        }
+    }
+}
+
+function closeGallery() {
+    const modal = document.getElementById('galleryModal');
+    if (modal) modal.classList.remove('active');
 }
 
 // ============================================================
@@ -249,7 +376,6 @@ async function handleDeleteProject(id) {
     if (!password) return;
 
     const result = await deleteProjectFromAPI(id, password);
-
     if (result.success) {
         alert('✅ Project deleted successfully!');
         await loadProjects();
@@ -259,9 +385,41 @@ async function handleDeleteProject(id) {
 }
 
 // ============================================================
+// HANDLE EDIT PROJECT
+// ============================================================
+async function handleEditProject(id) {
+    // Fetch the project details
+    const projects = await fetchProjects();
+    const project = projects.find(p => p.id == id);
+    if (!project) {
+        alert('⚠️ Project not found.');
+        return;
+    }
+
+    // Fill the admin form with project data
+    editingProjectId = id;
+    projectTitle.value = project.title || '';
+    projectDescription.value = project.description || '';
+    projectTech.value = project.tech || '';
+    projectLink.value = project.link || '';
+    projectLiveDemo.checked = project.live_demo === 1;
+    projectImages.value = project.images || '';
+
+    adminSubmitBtn.textContent = '✏️ Update Project';
+    adminForm.querySelector('h3')?.remove();
+    document.querySelector('.admin-box h3').textContent = '✏️ Edit Project';
+
+    // Open the admin panel
+    adminModal.classList.add('active');
+    hideAdminMessage();
+    document.body.classList.add('admin-mode');
+}
+
+// ============================================================
 // HELPERS
 // ============================================================
 function escapeHTML(str) {
+    if (!str) return '';
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
@@ -304,7 +462,6 @@ modalOverlay.addEventListener('click', (e) => {
 
 modalSubmit.addEventListener('click', () => {
     const password = modalInput.value.trim();
-
     if (!password) {
         modalAlert.classList.add('show');
         modalAlert.textContent = '⚠️ Please enter a password.';
@@ -328,9 +485,13 @@ modalInput.addEventListener('keydown', (e) => {
 // ============================================================
 function openAdminPanel(password) {
     currentPassword = password;
-    adminModal.classList.add('active');
+    editingProjectId = null;
+    adminSubmitBtn.textContent = '➕ Add Project';
+    document.querySelector('.admin-box h3').textContent = '📂 Add New Project';
     adminForm.reset();
+    projectLiveDemo.checked = true;
     hideAdminMessage();
+    adminModal.classList.add('active');
     document.body.classList.add('admin-mode');
 }
 
@@ -338,6 +499,9 @@ function closeAdminPanel() {
     adminModal.classList.remove('active');
     hideAdminMessage();
     currentPassword = '';
+    editingProjectId = null;
+    adminSubmitBtn.textContent = '➕ Add Project';
+    document.querySelector('.admin-box h3').textContent = '📂 Add New Project';
 }
 
 adminCloseBtn.addEventListener('click', closeAdminPanel);
@@ -349,7 +513,7 @@ adminModal.addEventListener('click', function(e) {
 });
 
 // ============================================================
-// ADMIN FORM – Add Project
+// ADMIN FORM – Add/Edit Project
 // ============================================================
 adminForm.addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -357,16 +521,16 @@ adminForm.addEventListener('submit', async function(e) {
     const title = projectTitle.value.trim();
     const description = projectDescription.value.trim();
     const tech = projectTech.value.trim();
-    const link = projectLink.value.trim();
+    const link = projectLink.value.trim() || '#';
+    const live_demo = projectLiveDemo.checked ? 1 : 0;
+    const images = projectImages.value.trim() || '';
 
-    if (!title || !description || !tech || !link) {
-        showAdminMessage('⚠️ Please fill in all fields.', 'error');
+    if (!title || !description || !tech) {
+        showAdminMessage('⚠️ Title, Description, and Frameworks are required.', 'error');
         return;
     }
 
-    try {
-        new URL(link);
-    } catch (_) {
+    if (link !== '#' && !link.startsWith('http')) {
         showAdminMessage('⚠️ Please enter a valid URL (e.g. https://example.com)', 'error');
         return;
     }
@@ -377,21 +541,33 @@ adminForm.addEventListener('submit', async function(e) {
         return;
     }
 
-    showAdminMessage('⏳ Adding project...', 'success');
+    showAdminMessage('⏳ Processing...', 'success');
 
-    const result = await addProjectToAPI({ title, description, tech, link }, currentPassword);
+    const projectData = { title, description, tech, link, live_demo, images };
+    let result;
+
+    if (editingProjectId) {
+        result = await editProjectToAPI(editingProjectId, projectData, currentPassword);
+    } else {
+        result = await addProjectToAPI(projectData, currentPassword);
+    }
 
     if (result.success) {
-        showAdminMessage('✅ Project added successfully!', 'success');
+        showAdminMessage(`✅ ${editingProjectId ? 'Project updated' : 'Project added'} successfully!`, 'success');
         adminForm.reset();
+        projectLiveDemo.checked = true;
+        editingProjectId = null;
+        adminSubmitBtn.textContent = '➕ Add Project';
+        document.querySelector('.admin-box h3').textContent = '📂 Add New Project';
         await loadProjects();
         setTimeout(() => hideAdminMessage(), 2500);
+        closeAdminPanel();
     } else {
         if (result.error && result.error.includes('Unauthorized')) {
             showAdminMessage('⚠️ Incorrect password. Please try again.', 'error');
             setTimeout(() => closeAdminPanel(), 2000);
         } else {
-            showAdminMessage('❌ ' + (result.error || 'Failed to add project'), 'error');
+            showAdminMessage('❌ ' + (result.error || 'Failed to save project'), 'error');
         }
     }
 });
@@ -427,9 +603,7 @@ if (contactForm) {
         try {
             const response = await fetch(`${API_URL.replace('/projects', '')}/contact`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, message }),
             });
 
@@ -457,3 +631,39 @@ if (contactForm) {
 document.addEventListener('DOMContentLoaded', function() {
     loadProjects();
 });
+
+// ============================================================
+// CONTACT FLOATING NOTIFICATION
+// ============================================================
+const notification = document.getElementById('contactNotification');
+const closeBtn = document.getElementById('closeNotification');
+
+// Check if user has closed it before
+const isNotificationClosed = localStorage.getItem('contactNotificationClosed') === 'true';
+
+if (isNotificationClosed) {
+    notification.classList.add('hidden');
+}
+
+// Close notification and remember preference
+closeBtn.addEventListener('click', () => {
+    notification.classList.add('hidden');
+    localStorage.setItem('contactNotificationClosed', 'true');
+});
+
+// Optional: Show notification when user scrolls to contact section
+// (It's already visible by default, but if you want to auto-show it)
+// Uncomment this if you want it to appear when reaching contact section
+
+const contactSection = document.getElementById('contact');
+const observer2 = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting && !localStorage.getItem('contactNotificationClosed')) {
+            notification.classList.remove('hidden');
+        }
+    });
+}, { threshold: 0.2 });
+
+if (contactSection) {
+    observer2.observe(contactSection);
+}

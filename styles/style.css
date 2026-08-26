@@ -1301,3 +1301,269 @@ body.light-mode .project-card .delete-project:hover {
         width: 100%;
     }
 }
+
+/* ============================================================
+   PROJECT ACTIONS (Edit, Delete, View Images)
+   ============================================================ */
+.project-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}
+
+.project-actions button {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.project-actions button:hover {
+    transform: scale(1.05);
+}
+
+.project-actions .edit-project:hover {
+    border-color: var(--accent-1);
+    color: var(--accent-1);
+}
+
+.project-actions .delete-project:hover {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.project-actions .view-images-btn:hover {
+    border-color: #f59e0b;
+    color: #f59e0b;
+}
+
+/* ============================================================
+   IMAGE GALLERY (Slideshow Modal)
+   ============================================================ */
+.gallery-box {
+    max-width: 800px;
+    width: 95%;
+    padding: 0;
+    overflow: hidden;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.gallery-container {
+    background: var(--bg-secondary);
+    border-radius: 24px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    position: relative;
+}
+
+.gallery-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+    max-height: 70vh;
+    overflow: hidden;
+}
+
+.gallery-slide img {
+    max-width: 100%;
+    max-height: 70vh;
+    object-fit: contain;
+    border-radius: 12px;
+}
+
+.gallery-close {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 2rem;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    z-index: 10;
+}
+
+.gallery-close:hover {
+    color: var(--accent-1);
+}
+
+.gallery-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.gallery-nav button {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+}
+
+.gallery-nav button:hover {
+    border-color: var(--accent-1);
+    color: var(--accent-1);
+}
+
+#galleryCounter {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Show admin controls only in admin mode */
+body.admin-mode .project-actions button {
+    display: flex;
+}
+
+.project-actions button {
+    display: none;
+}
+
+/* But always show view images if present */
+.project-actions .view-images-btn {
+    display: inline-flex;
+}
+
+/* ============================================================
+   LIVE DEMO CHECKBOX
+   ============================================================ */
+#adminForm label {
+    margin: 0.5rem 0;
+}
+
+/* ============================================================
+   CONTACT FLOATING NOTIFICATION
+   ============================================================ */
+.contact-notification {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    max-width: 380px;
+    width: calc(100% - 60px);
+    z-index: 500;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 18px 20px 18px 18px;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transform: translateY(0);
+    opacity: 1;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), 
+                opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.contact-notification.hidden {
+    transform: translateY(120px);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.notification-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.notification-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    line-height: 1.2;
+}
+
+.notification-text {
+    flex: 1;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin: 0;
+    padding-right: 4px;
+}
+
+.notification-close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 4px 4px 4px 8px;
+    transition: color 0.3s, transform 0.3s;
+    opacity: 0.6;
+    margin-top: 2px;
+}
+
+.notification-close:hover {
+    color: var(--accent-1);
+    opacity: 1;
+    transform: scale(1.15);
+}
+
+/* Light mode adjustments */
+body.light-mode .contact-notification {
+    background: rgba(255, 255, 255, 0.65);
+    border-color: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+body.light-mode .notification-text {
+    color: #334155;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .contact-notification {
+        bottom: 20px;
+        right: 20px;
+        max-width: 340px;
+        width: calc(100% - 40px);
+        padding: 16px;
+        border-radius: 16px;
+    }
+    
+    .notification-text {
+        font-size: 0.82rem;
+    }
+    
+    .notification-icon {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .contact-notification {
+        bottom: 15px;
+        right: 15px;
+        width: calc(100% - 30px);
+        padding: 14px;
+        border-radius: 14px;
+    }
+    
+    .notification-text {
+        font-size: 0.75rem;
+    }
+    
+    .notification-icon {
+        font-size: 1rem;
+    }
+}

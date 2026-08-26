@@ -1,22 +1,21 @@
 // ============================================================
-// CLOUDFLARE WORKER – Portfolio API (with Contact)
+// CLOUDFLARE WORKER – Portfolio API (Full CRUD)
 // ============================================================
 const ADMIN_PASSWORD = 'zephan';
 
-// CORS headers
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
 };
 
 // ============================================================
-// GET /api/projects – Fetch all projects
+// GET /api/projects – Fetch all projects (sorted: live first)
 // ============================================================
 async function getProjects(env) {
     try {
         const { results } = await env.DB.prepare(
-            'SELECT id, title, description, tech, link, created_at FROM projects ORDER BY id DESC'
+            'SELECT id, title, description, tech, link, live_demo, images, created_at FROM projects ORDER BY live_demo DESC, id DESC'
         ).all();
 
         return Response.json({
@@ -42,7 +41,7 @@ async function getProjects(env) {
 async function addProject(request, env) {
     try {
         const body = await request.json();
-        const { title, description, tech, link, password } = body;
+        const { title, description, tech, link, live_demo, images, password } = body;
 
         if (password !== ADMIN_PASSWORD) {
             return Response.json({
@@ -64,9 +63,12 @@ async function addProject(request, env) {
             });
         }
 
+        const liveDemo = live_demo ? 1 : 0;
+        const imageUrls = images || '';
+
         const result = await env.DB.prepare(
-            'INSERT INTO projects (title, description, tech, link) VALUES (?, ?, ?, ?)'
-        ).bind(title, description, tech, link).run();
+            'INSERT INTO projects (title, description, tech, link, live_demo, images) VALUES (?, ?, ?, ?, ?, ?)'
+        ).bind(title, description, tech, link, liveDemo, imageUrls).run();
 
         return Response.json({
             success: true,
@@ -77,7 +79,73 @@ async function addProject(request, env) {
                 description,
                 tech,
                 link,
+                live_demo: liveDemo,
+                images: imageUrls,
             },
+        }, {
+            headers: corsHeaders,
+        });
+
+    } catch (error) {
+        return Response.json({
+            success: false,
+            error: error.message,
+        }, {
+            status: 500,
+            headers: corsHeaders,
+        });
+    }
+}
+
+// ============================================================
+// PUT /api/projects/:id – Edit a project
+// ============================================================
+async function editProject(request, env, id) {
+    try {
+        const body = await request.json();
+        const { title, description, tech, link, live_demo, images, password } = body;
+
+        if (password !== ADMIN_PASSWORD) {
+            return Response.json({
+                success: false,
+                error: 'Unauthorized: Incorrect password',
+            }, {
+                status: 401,
+                headers: corsHeaders,
+            });
+        }
+
+        if (!title || !description || !tech || !link) {
+            return Response.json({
+                success: false,
+                error: 'All fields are required.',
+            }, {
+                status: 400,
+                headers: corsHeaders,
+            });
+        }
+
+        const liveDemo = live_demo ? 1 : 0;
+        const imageUrls = images || '';
+
+        const result = await env.DB.prepare(
+            'UPDATE projects SET title = ?, description = ?, tech = ?, link = ?, live_demo = ?, images = ? WHERE id = ?'
+        ).bind(title, description, tech, link, liveDemo, imageUrls, id).run();
+
+        if (result.meta.changes === 0) {
+            return Response.json({
+                success: false,
+                error: 'Project not found',
+            }, {
+                status: 404,
+                headers: corsHeaders,
+            });
+        }
+
+        return Response.json({
+            success: true,
+            message: 'Project updated!',
+            project: { id, title, description, tech, link, live_demo: liveDemo, images: imageUrls },
         }, {
             headers: corsHeaders,
         });
@@ -160,7 +228,6 @@ async function handleContact(request, env) {
             });
         }
 
-        // --- Send email via Resend ---
         let emailError = null;
         try {
             const emailResponse = await fetch('https://api.resend.com/emails', {
@@ -175,11 +242,15 @@ async function handleContact(request, env) {
                     subject: `New message from ${name}`,
                     reply_to: email,
                     html: `
-                        <h2>New contact form message</h2>
-                        <p><strong>Name:</strong> ${name}</p>
+                        <h2>📩 New contact form message</h2>
+                        <p><strong>From:</strong> ${name}</p>
                         <p><strong>Email:</strong> ${email}</p>
                         <p><strong>Message:</strong></p>
                         <p>${message.replace(/\n/g, '<br>')}</p>
+                        <hr>
+                        <p style="color: #666; font-size: 14px;">
+                            💡 Reply to this email to respond to ${name} directly.
+                        </p>
                     `,
                 }),
             });
@@ -194,7 +265,6 @@ async function handleContact(request, env) {
             emailError = 'Email service temporarily unavailable.';
         }
 
-        // --- Send to Discord webhook ---
         let discordError = null;
         try {
             const discordResponse = await fetch(env.DISCORD_WEBHOOK_URL, {
@@ -217,7 +287,6 @@ async function handleContact(request, env) {
             discordError = 'Discord notification temporarily unavailable.';
         }
 
-        // If both failed, return error
         if (emailError && discordError) {
             return Response.json({
                 success: false,
@@ -228,7 +297,6 @@ async function handleContact(request, env) {
             });
         }
 
-        // Partial success (one service worked)
         let messageText = 'Message sent! ';
         if (emailError) messageText += '(Email: ' + emailError + ') ';
         if (discordError) messageText += '(Discord: ' + discordError + ') ';
@@ -259,7 +327,6 @@ export default {
         const url = new URL(request.url);
         const path = url.pathname;
 
-        // CORS preflight
         if (request.method === 'OPTIONS') {
             return new Response(null, { headers: corsHeaders });
         }
@@ -271,7 +338,7 @@ export default {
         if (path === '/api/projects' && request.method === 'POST') {
             return await addProject(request, env);
         }
-        if (path.startsWith('/api/projects/') && request.method === 'DELETE') {
+        if (path.startsWith('/api/projects/')) {
             const id = path.split('/')[3];
             if (!id) {
                 return Response.json({
@@ -282,7 +349,12 @@ export default {
                     headers: corsHeaders,
                 });
             }
-            return await deleteProject(request, env, id);
+            if (request.method === 'PUT') {
+                return await editProject(request, env, id);
+            }
+            if (request.method === 'DELETE') {
+                return await deleteProject(request, env, id);
+            }
         }
 
         // Contact endpoint
