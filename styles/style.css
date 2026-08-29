@@ -1682,3 +1682,182 @@ body.light-mode .view-images-btn::after {
         font-size: 0.75rem;
     }
 }
+
+/* ============================================================
+   PROJECT CARDS – UNIFORM SIZE FIX
+   ============================================================ */
+
+/* Projects grid - enforce equal height */
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2.5rem;
+    align-items: stretch;
+}
+
+/* Each card has a fixed height and width */
+.project-card {
+    background: var(--card-bg);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(4px);
+    transition: transform 0.4s, box-shadow 0.4s, border-color 0.4s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 380px;
+    max-height: 480px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Ensure card content doesn't overflow */
+.project-card > * {
+    flex-shrink: 0;
+}
+
+/* Project title - fixed height */
+.project-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 2.5rem;
+    line-height: 1.3;
+}
+
+/* Project description - scrollable if too long */
+.project-card p {
+    color: var(--text-secondary);
+    flex-grow: 1;
+    margin-bottom: 1.5rem;
+    overflow-y: auto;
+    max-height: 120px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    padding-right: 4px;
+    /* Custom scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+.project-card p::-webkit-scrollbar {
+    width: 4px;
+}
+
+.project-card p::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.project-card p::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
+}
+
+/* Tech tags - fixed height */
+.project-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--accent-1);
+    font-weight: 500;
+    min-height: 2rem;
+    max-height: 3rem;
+    overflow: hidden;
+}
+
+.project-tech span {
+    white-space: nowrap;
+}
+
+/* Project links and actions - fixed at bottom */
+.project-links {
+    margin-bottom: 1rem;
+    min-height: 2rem;
+}
+
+.project-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: auto;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+    min-height: 3rem;
+    align-items: center;
+}
+
+/* Project tag - fixed */
+.project-tag {
+    display: inline-block;
+    background: var(--btn-gradient);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.8rem;
+    border-radius: 9999px;
+    align-self: flex-start;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+/* ============================================================
+   MOBILE RESPONSIVE ADJUSTMENTS
+   ============================================================ */
+
+@media (max-width: 768px) {
+    .project-card {
+        min-height: 340px;
+        max-height: 440px;
+        padding: 1.5rem;
+    }
+    
+    .project-card h3 {
+        font-size: 1.2rem;
+        min-height: 2rem;
+    }
+    
+    .project-card p {
+        max-height: 80px;
+        font-size: 0.85rem;
+    }
+    
+    .project-tech {
+        min-height: 1.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .project-actions {
+        min-height: 2.5rem;
+        padding-top: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .projects-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .project-card {
+        min-height: 320px;
+        max-height: 420px;
+        padding: 1.25rem;
+    }
+    
+    .project-card h3 {
+        font-size: 1.1rem;
+        min-height: 1.8rem;
+    }
+    
+    .project-card p {
+        max-height: 70px;
+        font-size: 0.8rem;
+    }
+}
